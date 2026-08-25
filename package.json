@@ -9,7 +9,7 @@
   "packageManager": "pnpm@11.23.0",
   "engines": {
     "node": ">=22.13.0",
-    "pnpm": ">=10.34.5"
+    "pnpm": ">=11.23.0"
   },
   "scripts": {
     "dev": "nodemon",
