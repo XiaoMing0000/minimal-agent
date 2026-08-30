@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "nodemon",
-    "dev:unwatch": "tsx src/index.ts",
+    "dev:unwatch": "tsx src/entry/index.ts",
     "build": "node ./config/esbuild.config.mts",
     "start": "node ./dist/index.js",
     "tsc": "tsc",
@@ -26,7 +26,8 @@
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "openai": "^7.5.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
