@@ -3,8 +3,8 @@ import * as esbuild from 'esbuild';
 
 await rm('./dist', { recursive: true, force: true });
 
-await esbuild.build({
-  entryPoints: { index: 'src/index.ts' },
+esbuild.build({
+  entryPoints: { index: 'src/entry/index.ts' },
   outdir: './dist/',
   entryNames: '[name]',
   assetNames: '[name]',

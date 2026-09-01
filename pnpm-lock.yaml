@@ -13,7 +13,10 @@ importers:
         version: 17.4.2
       openai:
         specifier: ^7.5.0
-        version: 7.5.0
+        version: 7.5.0(zod@4.5.4)
+      zod:
+        specifier: ^4.5.4
+        version: 4.5.4
     devDependencies:
       '@types/node':
         specifier: ^25.9.3
@@ -746,6 +749,9 @@ packages:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
     engines: {node: '>=6'}
 
+  zod@4.5.4:
+    resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
+
 snapshots:
 
   '@cspotcode/source-map-support@0.8.1':
@@ -1103,7 +1109,9 @@ snapshots:
 
   normalize-path@3.0.0: {}
 
-  openai@7.5.0: {}
+  openai@7.5.0(zod@4.5.4):
+    optionalDependencies:
+      zod: 4.5.4
 
   oxfmt@0.64.0:
     dependencies:
@@ -1221,3 +1229,5 @@ snapshots:
     optional: true
 
   yn@3.1.1: {}
+
+  zod@4.5.4: {}

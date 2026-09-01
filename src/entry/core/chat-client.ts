@@ -1,9 +1,22 @@
 import { SSEData, parseSSELine } from './sse';
+import { ToolCall, ToolSchema } from './tools';
 
 type Role = 'user' | 'assistant' | 'tool' | 'function' | 'system' | 'assistant';
-interface ChatMessage {
+export interface ChatMessage {
   role: Role;
-  content: string;
+  name?: string;
+  content: string | null;
+  tool_call_id?: string;
+  tool_calls?: Array<ToolCall>;
+}
+
+export interface ChatOptions {
+  thinking?: {
+    type: 'enabled' | 'disabled';
+  };
+  reasoning_effort?: 'low' | 'medium' | 'high';
+  temperature?: number;
+  tools?: Array<ToolSchema>;
 }
 
 interface BaseChoice {
@@ -23,7 +36,7 @@ interface StreamChatChoice extends BaseChoice {
   delta: ResponseMessage;
 }
 
-interface ChatCompletion {
+export interface ChatCompletion {
   id: string;
   object: string;
   created: number;
@@ -51,6 +64,7 @@ interface ResponseMessage {
   role: Role;
   content: string | Array<string>;
   reasoning_content: string | null;
+  tool_calls?: Array<ToolCall>;
 }
 
 /**
@@ -121,7 +135,7 @@ export class ChatClient {
    * @param messages Chat messages
    * @returns ChatCompletion
    */
-  async chat(messages: Array<ChatMessage>): Promise<ChatCompletion> {
+  async chat(messages: Array<ChatMessage>, options?: ChatOptions): Promise<ChatCompletion> {
     const res = await fetch(this.baseUrl + '/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -131,6 +145,8 @@ export class ChatClient {
       body: JSON.stringify({
         model: this.model,
         messages: messages,
+        ...(options ?? {}),
+        stream: false,
       }),
     });
 
@@ -144,8 +160,15 @@ export class ChatClient {
    * @param messages Chat messages
    * @returns AsyncGenerator<ChatCompletionChunk>
    */
-  async streamChat(messages: Array<ChatMessage>) {
+  async streamChat(messages: Array<ChatMessage>, options?: ChatOptions) {
     const { baseUrl, apiKey, model } = this;
+    const requestBody = JSON.stringify({
+      model: model,
+      messages: messages,
+      // thinking: { type: 'disabled' },
+      stream: true,
+      ...(options ?? {}),
+    });
     return async function* (): AsyncGenerator<ChatCompletionChunk> {
       const response = await fetch(baseUrl + '/v1/chat/completions', {
         method: 'POST',
@@ -153,12 +176,7 @@ export class ChatClient {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          model: model,
-          messages: messages,
-          // thinking: { type: 'disabled' },
-          stream: true,
-        }),
+        body: requestBody,
       });
       if (!response.body) {
         throw new Error('Response body is empty');

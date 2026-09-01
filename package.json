@@ -27,7 +27,8 @@
   },
   "dependencies": {
     "dotenv": "^17.2.3",
-    "openai": "^7.5.0"
+    "openai": "^7.5.0",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
