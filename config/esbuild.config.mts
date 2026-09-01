@@ -1,16 +1,16 @@
 import { rm } from 'fs/promises';
 import * as esbuild from 'esbuild';
 
-rm('./dist', { recursive: true, force: true });
+await rm('./dist', { recursive: true, force: true });
 
-esbuild.build({
+await esbuild.build({
   entryPoints: { index: 'src/index.ts' },
   outdir: './dist/',
   entryNames: '[name]',
   assetNames: '[name]',
   bundle: true,
   platform: 'node',
-  format: 'cjs',
+  format: 'esm',
   sourcemap: false,
   minify: true,
   external: ['dotenv'],
