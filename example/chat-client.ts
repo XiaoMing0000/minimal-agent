@@ -1,5 +1,5 @@
 import CONFIG from '../src/config/config';
-import { ChatClient } from '../src/entry/core/chat-client';
+import { ChatClient } from '../src/core/chat-client';
 
 const client = new ChatClient(CONFIG.DEEPSEEK_BASE_URL ?? '', CONFIG.DEEPSEEK_API_KEY ?? '', CONFIG.DEEPSEEK_FLASH_MODEL ?? '');
 

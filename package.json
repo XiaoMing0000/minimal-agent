@@ -1,7 +1,7 @@
 {
-  "name": "nodejs-falsework",
+  "name": "minimal-agent",
   "version": "1.0.0",
-  "description": "",
+  "description": "A minimal LLM agent with OpenAI-compatible chat, Zod tools, and a ReAct-style tool-calling loop.",
   "type": "module",
   "main": "index.js",
   "license": "MIT",
@@ -27,7 +27,6 @@
   },
   "dependencies": {
     "dotenv": "^17.2.3",
-    "openai": "^7.5.0",
     "zod": "^4.5.4"
   },
   "devDependencies": {
@@ -54,13 +53,19 @@
       "pnpm run lint:fix"
     ]
   },
-  "keywords": [],
-  "homepage": "https://github.com/XiaoMing0000/nodejs-falseworkCode#readme",
+  "keywords": [
+    "agent",
+    "llm",
+    "tool-calling",
+    "openai-compatible",
+    "typescript"
+  ],
+  "homepage": "https://github.com/XiaoMing0000/minimal-agent#readme",
   "bugs": {
-    "url": "https://github.com/XiaoMing0000/nodejs-falsework/issues"
+    "url": "https://github.com/XiaoMing0000/minimal-agent/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/XiaoMing0000/nodejs-falsework.git"
+    "url": "git+https://github.com/XiaoMing0000/minimal-agent.git"
   }
 }

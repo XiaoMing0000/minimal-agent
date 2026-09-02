@@ -1,9 +1,9 @@
 import CONFIG from '../config/config';
-import { Agent } from './core/agents';
-import { ChatClient } from './core/chat-client';
+import { Agent } from '../core/agents';
+import { ChatClient } from '../core/chat-client';
 
 import { z } from 'zod';
-import { tool } from './core/tools';
+import { tool } from '../core/tools';
 
 const weatherTool = tool(
   ({ city }) => {

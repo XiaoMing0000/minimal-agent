@@ -1,143 +1,151 @@
-# nodejs-falsework
+# minimal-agent
 
 [English](./README.en.md) | 简体中文
 
-一个开箱即用的 Node.js + TypeScript 脚手架，集成了开发、构建、代码检查与 Git 钩子，帮助你快速启动后端项目。
+一个最小可用的 LLM Agent：自实现 ChatClient 调用 Chat Completions，用 Zod 定义工具，通过 ReAct 式循环完成 tool calling。
 
 ## 特性
 
-- **TypeScript 6** — 严格模式，面向 Node.js 运行时
-- **esbuild** — 快速打包，输出 CommonJS 产物至 `dist/`
-- **nodemon + ts-node** — 开发时自动重启
-- **ESLint + typescript-eslint** — 代码规范检查
-- **Prettier** — 统一代码格式
-- **simple-git-hooks** — 提交前自动 lint，推送前自动格式化
-- **dotenv** — 环境变量支持
+- **Agent 循环** — 调模型 → 执行工具 → 再调模型，直到没有 `tool_calls`
+- **工具定义** — `tool()` 将 Zod schema 转成 function calling
+- **并发执行** — 同一轮多个工具调用可并行，默认最多 5 个
+- **ChatClient** — 非流式与 SSE 流式 `/v1/chat/completions`
+- **TypeScript + esbuild** — 严格模式，打包输出至 `dist/`
 
 ## 环境要求
 
 | 工具    | 版本       |
 | ------- | ---------- |
 | Node.js | >= 22.13.0 |
-| pnpm    | >= 9.15.0  |
+| pnpm    | >= 11.23.0 |
 
 ## 快速开始
 
 ```bash
 # 克隆项目
-git clone https://github.com/XiaoMing0000/nodejs-falsework.git
-cd nodejs-falsework
+git clone https://github.com/XiaoMing0000/minimal-agent.git
+cd minimal-agent
 
 # 安装依赖
 pnpm install
 
-# 配置环境变量（可选）
+# 配置环境变量
 cp .env.example .env
+```
 
-# 启动开发服务
+在 `.env` 中填写 DeepSeek 的地址、密钥和模型，然后启动：
+
+```bash
 pnpm dev
 ```
 
+默认入口 `src/entry/index.ts` 会注册一个 `get_weather` 示例工具，并让 Agent 查询深圳和西安的天气。
+
 ## 常用命令
 
-| 命令          | 说明                               |
-| ------------- | ---------------------------------- |
-| `pnpm dev`    | 开发模式，监听文件变更并自动重启   |
-| `pnpm build`  | 使用 esbuild 打包至 `dist/`        |
-| `pnpm start`  | 运行打包后的产物                   |
-| `pnpm lint`   | 执行 ESLint 与 TypeScript 类型检查 |
-| `pnpm format` | 使用 Prettier 格式化代码           |
+| 命令               | 说明                             |
+| ------------------ | -------------------------------- |
+| `pnpm dev`         | 开发模式，监听文件变更并自动重启 |
+| `pnpm dev:unwatch` | 直接用 tsx 运行入口，不监听      |
+| `pnpm build`       | 使用 esbuild 打包至 `dist/`      |
+| `pnpm start`       | 运行打包后的产物                 |
+| `pnpm lint:check`  | oxlint + TypeScript 类型检查     |
+| `pnpm fmt`         | 使用 oxfmt 格式化代码            |
 
 ## 项目结构
 
 ```
-nodejs-falsework/
+minimal-agent/
 ├── config/
-│   └── esbuild.config.mts   # esbuild 构建配置（ESM）
+│   └── esbuild.config.mts   # esbuild 构建配置
 ├── src/
-│   └── index.ts             # 应用入口
-├── dist/                      # 构建输出目录
-├── eslint.config.ts           # ESLint 配置
-├── nodemon.json               # nodemon 配置
-├── tsconfig.json              # TypeScript 配置
-├── .env.example               # 环境变量示例
+│   ├── config/config.ts     # 环境变量
+│   └── entry/
+│       ├── index.ts         # 示例入口（天气 Agent）
+│       ├── core/
+│       │   ├── agents.ts    # Agent 循环
+│       │   ├── chat-client.ts
+│       │   ├── tools.ts     # 工具定义
+│       │   └── sse.ts       # SSE 解析
+│       └── utils/utils.ts   # 并发任务队列
+├── example/                   # ChatClient 示例
+├── dist/                      # 构建输出
+├── .env.example               # 环境变量模板
 └── package.json
 ```
 
 ## 环境变量
 
-复制 `.env.example` 为 `.env`，按需填写变量。构建时 `dotenv` 会被标记为 external，需在运行时通过 `node_modules` 加载。
+复制 `.env.example` 为 `.env`，按需填写：
 
 ```bash
 cp .env.example .env
 ```
 
-在代码中使用：
+| 变量                   | 说明                             |
+| ---------------------- | -------------------------------- |
+| `DEEPSEEK_API_KEY`     | API Key                          |
+| `DEEPSEEK_BASE_URL`    | Chat Completions 接口的 Base URL |
+| `DEEPSEEK_MODEL`       | 默认模型                         |
+| `DEEPSEEK_FLASH_MODEL` | 示例入口使用的模型               |
+
+`ChatClient` 请求 `{baseUrl}/v1/chat/completions`，因此 Base URL 不要带该路径后缀。
+
+## 核心用法
 
 ```ts
-import 'dotenv/config';
+import { z } from 'zod';
+import { Agent } from './core/agents';
+import { ChatClient } from './core/chat-client';
+import { tool } from './core/tools';
 
-console.log(process.env.MY_VAR);
+const weatherTool = tool(({ city }) => ({ weather: `${city} 的天气是晴天。` }), {
+  name: 'get_weather',
+  description: '查询指定城市当前天气',
+  schema: z.object({
+    city: z.string().describe('需要查询天气的城市'),
+  }),
+});
+
+const client = new ChatClient(baseUrl, apiKey, model);
+const agent = new Agent({ client, tools: [weatherTool] });
+
+const messages = await agent.invoke([
+  { role: 'system', content: '你是一个天气助手。' },
+  { role: 'user', content: '查询深圳当前天气' },
+]);
 ```
 
-## 开发与构建
+`invoke` 默认循环深度 15、工具并发 5，可通过第三个参数覆盖。
 
-### 开发
+仅调用模型（不走 Agent 循环）时，可直接使用 `ChatClient`：
 
-`pnpm dev` 通过 nodemon 监听 `src/` 下的 TypeScript 文件，使用 ts-node 直接运行，无需手动编译。
-
-### 构建
-
-`pnpm build` 调用 `config/esbuild.config.mts`，将 `src/index.ts` 打包为 `dist/index.js`（CommonJS，已压缩）。
-
-生产环境启动：
-
-```bash
-pnpm build
-pnpm start
+```ts
+const client = new ChatClient(baseUrl, apiKey, model);
+const res = await client.chat([{ role: 'user', content: 'Hello' }]);
 ```
+
+流式示例见 `example/chat-client.ts`。
 
 ## 代码质量
 
-### Lint
-
-`pnpm lint` 依次执行：
-
-1. **ESLint** — 语法与风格检查（`typescript-eslint` recommended 规则）
-2. **tsc --noEmit** — TypeScript 类型检查（如未定义变量、类型错误等）
-
-> ESLint 的 `recommended` 配置不包含类型感知规则，未定义的标识符由 `tsc` 负责检出。
-
-### 格式化
-
-`pnpm format` 使用 Prettier 格式化项目文件。
-
-### Git 钩子
-
-通过 `simple-git-hooks` 配置：
-
-| 钩子         | 行为                  |
-| ------------ | --------------------- |
-| `pre-commit` | 运行 `npm run lint`   |
-| `pre-push`   | 运行 `npm run format` |
-
-首次安装依赖后，钩子会自动生效。若未生效，可手动执行：
-
-```bash
-npx simple-git-hooks
-```
+| 钩子         | 行为                                        |
+| ------------ | ------------------------------------------- |
+| `pre-commit` | lint-staged：oxfmt + oxlint --fix           |
+| `commit-msg` | 检查 changelog                              |
+| `pre-push`   | `pnpm run fmt:check && pnpm run lint:check` |
 
 ## 技术栈
 
-| 类别     | 依赖                      |
-| -------- | ------------------------- |
-| 运行时   | Node.js                   |
-| 语言     | TypeScript 6              |
-| 打包     | esbuild                   |
-| 开发     | nodemon, ts-node, tsx     |
-| 代码检查 | ESLint, typescript-eslint |
-| 格式化   | Prettier                  |
-| 环境变量 | dotenv                    |
+| 类别        | 依赖                                  |
+| ----------- | ------------------------------------- |
+| 运行时      | Node.js                               |
+| 语言        | TypeScript                            |
+| LLM         | 自实现 ChatClient（Chat Completions） |
+| 工具 schema | Zod                                   |
+| 打包        | esbuild                               |
+| 代码检查    | oxlint, tsc                           |
+| 格式化      | oxfmt                                 |
 
 ## 许可证
 
