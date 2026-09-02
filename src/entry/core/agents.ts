@@ -1,9 +1,15 @@
+import { runTasks } from '../utils/utils';
 import { ChatClient, ChatMessage, ChatOptions } from './chat-client';
 import { Tool } from './tools';
 
 interface AgentOptions {
   client: ChatClient;
   tools: Array<Tool>;
+}
+
+interface AgentRunTimes {
+  loopRemaining?: number; // agent 循环深度限制， default 15
+  maxToolCallLimit?: number; // 工具调用并发限制， default 5
 }
 
 export class Agent {
@@ -14,8 +20,11 @@ export class Agent {
     this.tools = options.tools;
   }
 
-  async invoke(messages: Array<ChatMessage>, options?: ChatOptions): Promise<ChatMessage[]> {
-    // TODO agent loop 深度限制
+  async invoke(
+    messages: Array<ChatMessage>,
+    options?: ChatOptions,
+    { maxToolCallLimit = 5, loopRemaining = 15 }: AgentRunTimes = {},
+  ): Promise<ChatMessage[]> {
     const invokeMessages = [...messages];
     const res = await this.client.chat(messages, {
       ...(options ?? {}),
@@ -31,28 +40,35 @@ export class Agent {
       tool_calls: toolCalls,
     });
     if (toolCalls) {
-      // TODO 工具调用并发限制
+      // 创建调用工具任务
+      const tasks = [];
       for (const toolCall of toolCalls) {
         // 获取工具
         const tool = this.tools.find((tool) => tool.name === toolCall.function.name);
         if (tool) {
-          // TODO arguments 参数校验
           // 调用工具
-          const result = await tool.callback(
-            tool.schema.function.parameters?.type === 'object' ? JSON.parse(toolCall.function.arguments) : toolCall.function.arguments,
-          );
-          // 记录工具调用结果
-          invokeMessages.push({
-            role: 'tool',
-            name: tool.name,
-            tool_call_id: toolCall.id,
-            content: JSON.stringify(result ?? null),
+          tasks.push(async () => {
+            const result = await tool.callback(
+              tool.schema.function.parameters?.type === 'object' ? JSON.parse(toolCall.function.arguments) : toolCall.function.arguments,
+            );
+            // 记录工具调用结果
+            invokeMessages.push({
+              role: 'tool',
+              name: tool.name,
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(result ?? null),
+            });
           });
         }
       }
+      // 并发调用工具
+      await runTasks(tasks, maxToolCallLimit);
 
       // 调用工具后，需要重新调用模型，获取最终结果
-      return await this.invoke(invokeMessages, options);
+      if (loopRemaining > 0) {
+        return await this.invoke(invokeMessages, options, { maxToolCallLimit, loopRemaining: --loopRemaining });
+      }
+      throw new Error(`agent loop deep limit reached: ${loopRemaining}`);
     }
     return invokeMessages;
   }

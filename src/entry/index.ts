@@ -20,30 +20,14 @@ const weatherTool = tool(
   },
 );
 
-const emailTool = tool(
-  ({ message }) => {
-    console.log('in email tool: ', message);
-    return {
-      weather: `邮件内容：${message}。`,
-    };
-  },
-  {
-    name: 'send_email',
-    description: '向用户发送邮件信息。',
-    schema: z.object({
-      message: z.string().describe('邮件信息'),
-    }),
-  },
-);
-
 const client = new ChatClient(CONFIG.DEEPSEEK_BASE_URL ?? '', CONFIG.DEEPSEEK_API_KEY ?? '', CONFIG.DEEPSEEK_FLASH_MODEL ?? '');
-const agent = new Agent({ client, tools: [weatherTool, emailTool] });
+const agent = new Agent({ client, tools: [weatherTool] });
 
 (async () => {
   const res = await agent.invoke(
     [
-      { role: 'system', content: '你是一个天气助手，帮助用户查询指定城市当前天气，并发送邮件给用户。' },
-      { role: 'user', content: '查询深圳当前天气，并发送邮件给用户' },
+      { role: 'system', content: '你是一个天气助手，帮助用户查询指定城市当前天气。' },
+      { role: 'user', content: '查询深圳和西安当前天气' },
     ],
     {
       temperature: 0,
