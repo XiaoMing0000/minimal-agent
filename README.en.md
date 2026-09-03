@@ -10,6 +10,7 @@ A minimal LLM agent: a self-implemented ChatClient for Chat Completions, Zod-def
 - **Tool definition** — `tool()` turns a Zod schema into function calling
 - **Concurrent tools** — multiple tool calls in one turn can run in parallel (default cap: 5)
 - **ChatClient** — non-streaming and SSE streaming `/v1/chat/completions`
+- **Langfuse tracing** — optional observability for Agent / Generation / Tool chains
 - **TypeScript + esbuild** — strict mode, bundled output in `dist/`
 
 ## Requirements
@@ -88,8 +89,15 @@ cp .env.example .env
 | `DEEPSEEK_BASE_URL`    | Base URL of the Chat Completions API |
 | `DEEPSEEK_MODEL`       | Default model                        |
 | `DEEPSEEK_FLASH_MODEL` | Model used by the demo entry         |
+| `LANGFUSE_PUBLIC_KEY`  | Langfuse public key (skip if empty)  |
+| `LANGFUSE_SECRET_KEY`  | Langfuse secret key                  |
+| `LANGFUSE_BASE_URL`    | Langfuse endpoint (cloud by default) |
 
 `ChatClient` requests `{baseUrl}/v1/chat/completions`, so the base URL should not include that path suffix.
+
+With Langfuse configured, a full agent run appears as a trace in the console, for example:
+
+![Langfuse Tracing](./docs/images/langfuse-tracing.png)
 
 ## Core Usage
 

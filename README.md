@@ -10,6 +10,7 @@
 - **工具定义** — `tool()` 将 Zod schema 转成 function calling
 - **并发执行** — 同一轮多个工具调用可并行，默认最多 5 个
 - **ChatClient** — 非流式与 SSE 流式 `/v1/chat/completions`
+- **Langfuse 追踪** — 可选接入，观测 Agent / Generation / Tool 调用链
 - **TypeScript + esbuild** — 严格模式，打包输出至 `dist/`
 
 ## 环境要求
@@ -88,8 +89,15 @@ cp .env.example .env
 | `DEEPSEEK_BASE_URL`    | Chat Completions 接口的 Base URL |
 | `DEEPSEEK_MODEL`       | 默认模型                         |
 | `DEEPSEEK_FLASH_MODEL` | 示例入口使用的模型               |
+| `LANGFUSE_PUBLIC_KEY`  | Langfuse Public Key（留空则不上报） |
+| `LANGFUSE_SECRET_KEY`  | Langfuse Secret Key              |
+| `LANGFUSE_BASE_URL`    | Langfuse 服务地址，默认为云端    |
 
 `ChatClient` 请求 `{baseUrl}/v1/chat/completions`，因此 Base URL 不要带该路径后缀。
+
+配置 Langfuse 后，一次 Agent 调用会在控制台看到完整 trace，例如：
+
+![Langfuse Tracing](./docs/images/langfuse-tracing.png)
 
 ## 核心用法
 

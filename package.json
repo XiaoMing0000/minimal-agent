@@ -15,6 +15,7 @@
     "dev": "nodemon",
     "dev:unwatch": "tsx src/entry/index.ts",
     "build": "node ./config/esbuild.config.mts",
+    "build:watch": "node ./config/esbuild.config.mts --watch",
     "start": "node ./dist/index.js",
     "tsc": "tsc",
     "tsc:check": "tsc --noEmit",
@@ -26,6 +27,9 @@
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
+    "@langfuse/otel": "^5.11.0",
+    "@langfuse/tracing": "^5.11.0",
+    "@opentelemetry/sdk-node": "^0.222.0",
     "dotenv": "^17.2.3",
     "zod": "^4.5.4"
   },

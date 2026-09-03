@@ -1,3 +1,4 @@
+import '../utils/instrumentation';
 import CONFIG from '../config/config';
 import { Agent } from '../core/agents';
 import { ChatClient } from '../core/chat-client';

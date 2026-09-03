@@ -15,7 +15,8 @@
       "type": "node-terminal",
       "name": "Run index.ts",
       "request": "launch",
-      "command": "pnpm run dev:unwatch",
+      // 忽略自谦证书
+      "command": "export NODE_TLS_REJECT_UNAUTHORIZED=0\n pnpm run dev:unwatch",
       "cwd": "${workspaceFolder}"
     }
   ]
