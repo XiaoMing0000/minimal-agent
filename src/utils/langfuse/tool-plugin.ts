@@ -28,7 +28,7 @@ class ToolPlugin {
       return {
         ...result,
         callback: observe(result.callback, {
-          name: result.name,
+          name: `Tool: ${result.name}`,
           asType: 'tool',
         }),
       };

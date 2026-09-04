@@ -26,7 +26,7 @@ class ChatClientPlugin {
     if (!_original) return;
 
     Cls.prototype[operation] = observe(_original, {
-      name: operation,
+      name: `LLM: ${operation}`,
       asType,
     });
   }

@@ -11,7 +11,7 @@ class AgentPlugin {
    * 启动监控 Agent 方法
    */
   install(): void {
-    this.interceptOperation(Agent, 'invoke', 'agent', 'agent.invoke');
+    this.interceptOperation(Agent, 'invoke', 'agent');
   }
 
   /**
@@ -26,7 +26,7 @@ class AgentPlugin {
     if (!_original) return;
 
     Cls.prototype[operation] = observe(_original, {
-      name,
+      name: `Agent: ${name}`,
       asType,
     });
   }
