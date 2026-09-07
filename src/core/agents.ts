@@ -3,8 +3,10 @@ import { ChatClient, ChatMessage, ChatOptions } from './chat-client';
 import { Tool } from './tools';
 
 interface AgentOptions {
+  name: string;
   client: ChatClient;
   tools: Array<Tool>;
+  model?: string;
 }
 
 interface AgentRunTimes {
@@ -13,20 +15,21 @@ interface AgentRunTimes {
 }
 
 export class Agent {
+  readonly name: string;
   private client: ChatClient;
   private tools: Array<Tool>;
+  private model: string;
   constructor(options: AgentOptions) {
+    this.name = options.name;
     this.client = options.client;
     this.tools = options.tools;
+    this.model = options.client.model ?? options.model ?? '';
   }
 
-  async invoke(
-    messages: Array<ChatMessage>,
-    options?: ChatOptions,
-    { maxToolCallLimit = 5, loopRemaining = 15 }: AgentRunTimes = {},
-  ): Promise<ChatMessage[]> {
-    const invokeMessages = [...messages];
-    const res = await this.client.chat(messages, {
+  async invoke(options?: ChatOptions, { maxToolCallLimit = 5, loopRemaining = 15 }: AgentRunTimes = {}): Promise<ChatMessage[]> {
+    const invokeMessages: ChatMessage[] = [...(options?.messages ?? [])];
+    const res = await this.client.chat({
+      model: this.model,
       ...(options ?? {}),
       tools: [...this.tools.map((tool) => tool.schema), ...(options?.tools ?? [])],
     });
@@ -66,7 +69,7 @@ export class Agent {
 
       // 调用工具后，需要重新调用模型，获取最终结果
       if (loopRemaining > 0) {
-        return await this.invoke(invokeMessages, options, { maxToolCallLimit, loopRemaining: --loopRemaining });
+        return await this.invoke({ ...options, messages: invokeMessages }, { maxToolCallLimit, loopRemaining: --loopRemaining });
       }
       throw new Error(`agent loop deep limit reached: ${loopRemaining}`);
     }

@@ -22,19 +22,17 @@ const weatherTool = tool(
 );
 
 const client = new ChatClient(CONFIG.DEEPSEEK_BASE_URL ?? '', CONFIG.DEEPSEEK_API_KEY ?? '', CONFIG.DEEPSEEK_FLASH_MODEL ?? '');
-const agent = new Agent({ client, tools: [weatherTool] });
+const agent = new Agent({ name: 'weather-agent', client, tools: [weatherTool] });
 
 (async () => {
-  const res = await agent.invoke(
-    [
+  const res = await agent.invoke({
+    messages: [
       { role: 'system', content: '你是一个天气助手，帮助用户查询指定城市当前天气。' },
       { role: 'user', content: '查询深圳和西安当前天气' },
     ],
-    {
-      temperature: 0,
-      thinking: { type: 'enabled' },
-    },
-  );
+    temperature: 0,
+    thinking: { type: 'enabled' },
+  });
   const resData = res.at(-1);
   console.log('resData: ', resData);
 })();

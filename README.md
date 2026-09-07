@@ -83,15 +83,15 @@ minimal-agent/
 cp .env.example .env
 ```
 
-| 变量                   | 说明                             |
-| ---------------------- | -------------------------------- |
-| `DEEPSEEK_API_KEY`     | API Key                          |
-| `DEEPSEEK_BASE_URL`    | Chat Completions 接口的 Base URL |
-| `DEEPSEEK_MODEL`       | 默认模型                         |
-| `DEEPSEEK_FLASH_MODEL` | 示例入口使用的模型               |
+| 变量                   | 说明                                |
+| ---------------------- | ----------------------------------- |
+| `DEEPSEEK_API_KEY`     | API Key                             |
+| `DEEPSEEK_BASE_URL`    | Chat Completions 接口的 Base URL    |
+| `DEEPSEEK_MODEL`       | 默认模型                            |
+| `DEEPSEEK_FLASH_MODEL` | 示例入口使用的模型                  |
 | `LANGFUSE_PUBLIC_KEY`  | Langfuse Public Key（留空则不上报） |
-| `LANGFUSE_SECRET_KEY`  | Langfuse Secret Key              |
-| `LANGFUSE_BASE_URL`    | Langfuse 服务地址，默认为云端    |
+| `LANGFUSE_SECRET_KEY`  | Langfuse Secret Key                 |
+| `LANGFUSE_BASE_URL`    | Langfuse 服务地址，默认为云端       |
 
 `ChatClient` 请求 `{baseUrl}/v1/chat/completions`，因此 Base URL 不要带该路径后缀。
 

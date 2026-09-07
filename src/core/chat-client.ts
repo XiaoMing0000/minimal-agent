@@ -11,12 +11,14 @@ export interface ChatMessage {
 }
 
 export interface ChatOptions {
+  model?: string;
   thinking?: {
     type: 'enabled' | 'disabled';
   };
   reasoning_effort?: 'low' | 'medium' | 'high';
   temperature?: number;
   tools?: Array<ToolSchema>;
+  messages?: Array<ChatMessage>;
 }
 
 interface BaseChoice {
@@ -135,7 +137,7 @@ export class ChatClient {
    * @param messages Chat messages
    * @returns ChatCompletion
    */
-  async chat(messages: Array<ChatMessage>, options?: ChatOptions): Promise<ChatCompletion> {
+  async chat(options: ChatOptions): Promise<ChatCompletion> {
     const res = await fetch(this.baseUrl + '/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -143,8 +145,6 @@ export class ChatClient {
         Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
-        model: this.model,
-        messages: messages,
         ...(options ?? {}),
         stream: false,
       }),
@@ -160,11 +160,9 @@ export class ChatClient {
    * @param messages Chat messages
    * @returns AsyncGenerator<ChatCompletionChunk>
    */
-  async streamChat(messages: Array<ChatMessage>, options?: ChatOptions) {
-    const { baseUrl, apiKey, model } = this;
+  async streamChat(options: ChatOptions) {
+    const { baseUrl, apiKey } = this;
     const requestBody = JSON.stringify({
-      model: model,
-      messages: messages,
       // thinking: { type: 'disabled' },
       stream: true,
       ...(options ?? {}),
