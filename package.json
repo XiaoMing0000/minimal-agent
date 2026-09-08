@@ -12,7 +12,7 @@
     "pnpm": ">=11.23.0"
   },
   "scripts": {
-    "dev": "nodemon",
+    "dev": "node --watch ./config/esbuild.config.ts --dev",
     "dev:unwatch": "tsx src/entry/index.ts",
     "build": "node ./config/esbuild.config.mts",
     "build:watch": "node ./config/esbuild.config.mts --watch",
@@ -38,7 +38,6 @@
     "esbuild": "^0.28.1",
     "jiti": "^2.7.0",
     "lint-staged": "^17.3.0",
-    "nodemon": "^3.1.14",
     "oxfmt": "^0.64.0",
     "oxlint": "^1.79.0",
     "simple-git-hooks": "^2.13.1",
