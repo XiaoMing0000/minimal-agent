@@ -14,8 +14,8 @@
   "scripts": {
     "dev": "node --watch ./config/esbuild.config.ts --dev",
     "dev:unwatch": "tsx src/entry/index.ts",
-    "build": "node ./config/esbuild.config.mts",
-    "build:watch": "node ./config/esbuild.config.mts --watch",
+    "build": "node ./config/esbuild.config.ts",
+    "build:watch": "node ./config/esbuild.config.ts --watch",
     "start": "node ./dist/index.js",
     "tsc": "tsc",
     "tsc:check": "tsc --noEmit",

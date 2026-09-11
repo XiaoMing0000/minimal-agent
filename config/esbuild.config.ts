@@ -9,7 +9,7 @@ const runIndex = './dist/index.js';
 
 // 构建入口
 let commonOptions: esbuild.BuildOptions = {
-  entryPoints: { index: 'src/index.ts' },
+  entryPoints: { index: 'src/entry/index.ts' },
   outdir: './dist/',
   entryNames: '[name]',
   assetNames: '[name]',
